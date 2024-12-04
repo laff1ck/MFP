@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Морской бой</title>
+    <style>
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 40px);
+            grid-gap: 5px;
+            margin: 20px auto;
+            width: fit-content;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            background-color: lightblue;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .cell.hit {
+            background-color: red;
+        }
+
+        .cell.miss {
+            background-color: gray;
+        }
+
+        .cell.ship {
+            background-color: black;
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+        }
+
+        .reset-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="status" id="status">Сделайте ход!</div>
+    <div class="game-board" id="game-board"></div>
+    <button class="reset-button" onclick="initializeGame()">Начать заново</button>
+
+    <script>
+        const boardSize = 6;
+        const numShips = 3;
+        let gameBoard = [];
+        let ships = [];
+        let hits = 0;
+
+        const boardElement = document.getElementById("game-board");
+        const statusElement = document.getElementById("status");
+
+        // Создание игрового поля
+        function initializeGame() {
+            gameBoard = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
+            ships = [];
+            hits = 0;
+
+            // Размещение кораблей
+            while (ships.length < numShips) {
+                const x = Math.floor(Math.random() * boardSize);
+                const y = Math.floor(Math.random() * boardSize);
+                if (!ships.some(ship => ship[0] === x && ship[1] === y)) {
+                    ships.push([x, y]);
+                }
+            }
+
+            // Очистка игрового поля
+            boardElement.innerHTML = "";
+            for (let x = 0; x < boardSize; x++) {
+                for (let y = 0; y < boardSize; y++) {
+                    const cell = document.createElement("div");
+                    cell.className = "cell";
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    cell.addEventListener("click", handleCellClick);
+                    boardElement.appendChild(cell);
+                }
+            }
+
+            statusElement.textContent = "Сделайте ход!";
+        }
+
+        // Обработка кликов по клеткам
+        function handleCellClick(event) {
+            const cell = event.target;
+            const x = parseInt(cell.dataset.x, 10);
+            const y = parseInt(cell.dataset.y, 10);
+
+            // Проверяем, была ли уже обработана ячейка
+            if (cell.classList.contains("hit") || cell.classList.contains("miss")) {
+                statusElement.textContent = "Вы уже стреляли сюда!";
+                return;
+            }
+
+            // Проверяем попадание
+            if (ships.some(ship => ship[0] === x && ship[1] === y)) {
+                cell.classList.add("hit");
+                hits++;
+                statusElement.textContent = `Попадание! Осталось кораблей: ${numShips - hits}`;
+            } else {
+                cell.classList.add("miss");
+                statusElement.textContent = "Мимо!";
+            }
+
+            // Проверяем конец игры
+            if (hits === numShips) {
+                statusElement.textContent = "Победа! Все корабли потоплены.";
+                endGame();
+            }
+        }
+
+        // Завершение игры
+        function endGame() {
+            for (let x = 0; x < boardSize; x++) {
+                for (let y = 0; y < boardSize; y++) {
+                    const cell = boardElement.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+                    if (ships.some(ship => ship[0] === x && ship[1] === y)) {
+                        cell.classList.add("ship");
+                    }
+                }
+            }
+        }
+
+        // Запуск игры
+        initializeGame();
+    </script>
+</body>
+</html>
