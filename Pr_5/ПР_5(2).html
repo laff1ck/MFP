@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heatmap with Central Heating</title>
+    <style>
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(15, 20px);
+            grid-gap: 2px;
+            justify-content: center;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="heatmap" id="heatmap"></div>
+
+    <script>
+        const heatmapContainer = document.getElementById("heatmap");
+        const rows = 15;
+        const cols = 15;
+
+        const maxTemp = 35; // Максимальная температура в центре
+        const minTemp = -15; // Минимальная температура на краях
+        const centerX = Math.floor(rows / 2);
+        const centerY = Math.floor(cols / 2);
+
+        // Функция для расчета температуры на основе расстояния от центра
+        const calculateTemperature = (x, y) => {
+            const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+            const maxDistance = Math.sqrt(centerX ** 2 + centerY ** 2);
+            return Math.floor(maxTemp - (distance / maxDistance) * (maxTemp - minTemp));
+        };
+
+        // Функция для получения цвета на основе температуры
+        const getColor = (temp) => {
+            const normalized = (temp - minTemp) / (maxTemp - minTemp);
+            const red = Math.floor(normalized * 255);
+            const blue = Math.floor((1 - normalized) * 255);
+            return `rgb(${red}, 0, ${blue})`;
+        };
+
+        // Создание тепловой карты
+        for (let x = 0; x < rows; x++) {
+            for (let y = 0; y < cols; y++) {
+                const temp = calculateTemperature(x, y);
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                cell.style.backgroundColor = getColor(temp);
+                heatmapContainer.appendChild(cell);
+            }
+        }
+    </script>
+</body>
+</html>
